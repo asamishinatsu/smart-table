@@ -30,6 +30,14 @@ export function initFiltering(elements, indexes) {
         }
 
         // отфильтровать данные используя компаратор
+        
+        const fromVal = state.totalFrom?.trim();
+        const toVal = state.totalTo?.trim();
+        state.total = [
+            fromVal ? Number(fromVal) : '',
+            toVal ? Number(toVal) : ''
+        ];
+        
         return data.filter(row => compare(row, state));
     }
 }

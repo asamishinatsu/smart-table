@@ -19,6 +19,8 @@ export const initPagination = ({pages, fromRow, toRow, totalRows}, createPage) =
             case 'last': page = pageCount; break;
         }
 
+        page = Math.max(1, Math.min(page, Math.max(1, pageCount)));
+
         // получить список видимых страниц и вывести их
         const visiblePages = getPages(page, pageCount, 5);
         pages.replaceChildren(...visiblePages.map(pageNumber => {
@@ -27,7 +29,7 @@ export const initPagination = ({pages, fromRow, toRow, totalRows}, createPage) =
         }));
 
         // обновить статус пагинации
-        fromRow.textContent = (page - 1) * rowsPerPage + 1;
+        fromRow.textContent = Math.min((page - 1) * rowsPerPage + 1, data.length);
         toRow.textContent = Math.min((page * rowsPerPage), data.length);
         totalRows.textContent = data.length;
 
