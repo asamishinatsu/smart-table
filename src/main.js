@@ -92,5 +92,4 @@ async function init() {
     });
 }
 
-await init();
-await render();
+init().then(render);

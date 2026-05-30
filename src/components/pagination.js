@@ -6,10 +6,24 @@ export const initPagination = ({pages, fromRow, toRow, totalRows}, createPage) =
     pages.firstElementChild.remove();
 
     let pageCount;
+    let currentLimit;
+    let lastQueryStr;
 
     const applyPagination = (query, state, action) => {
         const limit = state.rowsPerPage;
         let page = state.page;
+
+        const currentQueryStr = JSON.stringify(query);
+
+        if (
+            (currentLimit && currentLimit !== limit) || 
+            (lastQueryStr !== undefined && lastQueryStr !== currentQueryStr)
+        ) {
+            page = 1;
+        }
+
+        currentLimit = limit;
+        lastQueryStr = currentQueryStr;
 
         // обработать действия
         if (action) switch(action.name) {
@@ -19,7 +33,6 @@ export const initPagination = ({pages, fromRow, toRow, totalRows}, createPage) =
             case 'last': page = pageCount || 1; break;
         }
 
-        page = Math.max(1, Math.min(page, Math.max(1, pageCount || 1)));
         return Object.assign({}, query, {
             limit,
             page
@@ -27,18 +40,19 @@ export const initPagination = ({pages, fromRow, toRow, totalRows}, createPage) =
     }
 
     const updatePagination = (total, { page, limit }) => {
-        pageCount = Math.ceil(total / limit);
+        pageCount = Math.ceil(total / limit) || 1;
 
         // получить список видимых страниц и вывести их
-        const visiblePages = getPages(page, pageCount, 5);
+        const visualPage = Math.max(1, Math.min(page, pageCount));
+        const visiblePages = getPages(visualPage, pageCount, 5);
         pages.replaceChildren(...visiblePages.map(pageNumber => {
             const el = pageTemplate.cloneNode(true);
-            return createPage(el, pageNumber, pageNumber === page);
+            return createPage(el, pageNumber, pageNumber === visualPage);
         }));
 
         // обновить статус пагинации
-        fromRow.textContent = total > 0 ? (page - 1) * limit + 1 : 0;
-        toRow.textContent = Math.min((page * limit), total);
+        fromRow.textContent = total === 0 ? 0 : (visualPage - 1) * limit + 1;
+        toRow.textContent = Math.min((visualPage * limit), total);
         totalRows.textContent = total;
     }
 
